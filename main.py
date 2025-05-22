@@ -4,12 +4,16 @@ import subprocess
 app = FastAPI()
 
 @app.get("/")
-def home():
-    return {"status": "OK", "message": "Scraper API működik"}
+def root():
+    return {"status": "él", "info": "Használd a /scrape végpontot a scraper futtatásához."}
 
 @app.get("/scrape")
-def run_scrapy():
-    result = subprocess.run(["scrapy", "crawl", "kallofem", "-o", "output.json"], capture_output=True, text=True)
+def run_scrapy_spider():
+    result = subprocess.run(
+        ["scrapy", "crawl", "kallofem", "-o", "output.json"],
+        capture_output=True,
+        text=True
+    )
     return {
         "status": "sikeres" if result.returncode == 0 else "hiba",
         "stdout": result.stdout,
