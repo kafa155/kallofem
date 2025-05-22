@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import RedirectResponse
 import subprocess
 import os
 import json
@@ -14,6 +15,10 @@ json_preview = []
 @app.get("/")
 def root():
     return {"status": "él", "info": "Használd a /ui felületet a scraper kezeléséhez."}
+
+@app.get("/")
+def root_redirect():
+    return RedirectResponse(url="/ui")
 
 @app.get("/scrape")
 def run_scrapy_spider():
