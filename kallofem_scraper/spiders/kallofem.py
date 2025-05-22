@@ -13,22 +13,33 @@ class KallofemSpider(scrapy.Spider):
             yield response.follow(url, callback=self.parse_category, cb_kwargs={"kategoria": kategoria_nev})
 
     def parse_category(self, response, kategoria):
-        gombok = response.css("button.product-cart")
-
+        termekek = response.css("article.product-row")
         print(f"📦 Kategória: {kategoria} -> {response.url}")
-        print(f"  ↳ {len(gombok)} termék gomb találva")
+        print(f"  ↳ {len(termekek)} termékkártya találva")
 
-        # Az első 6 gomb kihagyása
-        for g in gombok[6:]:
+        for kartya in termekek:
+            # Kizárjuk a népszerű termékeket tartalmazó blokkot
+            if kartya.xpath("ancestor::div[contains(@class, 'popular-product-search')]"):
+                continue  # ha benne van egy ilyen div-ben, kihagyjuk
+
+            gomb = kartya.css("button.product-cart")
+            if not gomb:
+                continue
+
+            gomb = gomb[0]
+
             yield {
                 "kategoria": kategoria,
-                "termeknev": g.attrib.get("data-product_name", "").strip(),
-                "ar": g.attrib.get("data-product_price", "").strip(),
-                "kep_url": response.urljoin(g.attrib.get("data-product_image", "").strip())
+                "termeknev": gomb.attrib.get("data-product_name", "").strip(),
+                "ar": gomb.attrib.get("data-product_price", "").strip(),
+                "kep_url": response.urljoin(gomb.attrib.get("data-product_image", "").strip())
             }
 
-        # Lapozás kezelése
+        # Következő oldal
         kovetkezo = response.css('a.page-link[rel=next]::attr(href)').get()
         if kovetkezo:
             yield response.follow(kovetkezo, callback=self.parse_category, cb_kwargs={'kategoria': kategoria})
+
+
+
 
