@@ -2,24 +2,29 @@ import scrapy
 
 class KallofemSpider(scrapy.Spider):
     name = "kallofem"
-    start_urls = ["https://kallofem.hu/shop"]
+    start_urls = ["https://kallofem.hu/shop/osszes-termek"]
 
     def parse(self, response):
-        kategoriak = response.css('a.group-box::attr(href)').getall()
-        for url in kategoriak:
-            kategoria_nev = url.split('/')[-1].replace('-', ' ').title()
-            yield response.follow(url, callback=self.parse_category, cb_kwargs={'kategoria': kategoria_nev})
+        links = response.css("h2.mb-3 > a::attr(href)").getall()
+        for url in links:
+            kategoria_nev = url.split("/")[-1].replace("-", " ").title()
+            yield response.follow(url, callback=self.parse_category, cb_kwargs={"kategoria": kategoria_nev})
 
     def parse_category(self, response, kategoria):
-        termekek = response.css('div.product-list-item')
-        for termek in termekek:
+        gombok = response.css("button.product-cart")
+        print(f"[{kategoria}] - {len(gombok)} termék találva")
+
+        for gomb in gombok:
             yield {
                 "kategoria": kategoria,
-                "termeknev": termek.css('div.title::text').get(default='').strip(),
-                "ar": termek.css('div.price::text').get(default='').strip().replace(" Ft", "").replace(" ", ""),
-                "kep_url": response.urljoin(termek.css('img::attr(src)').get(default=''))
+                "termeknev": gomb.attrib.get("data-product_name", "").strip(),
+                "ar": gomb.attrib.get("data-product_price", "").strip(),
+                "kep_url": response.urljoin(gomb.attrib.get("data-product_image", "").strip())
             }
 
-        next_page = response.css('a.page-link[rel=next]::attr(href)').get()
-        if next_page:
-            yield response.follow(next_page, callback=self.parse_category, cb_kwargs={'kategoria': kategoria})
+        # Lapozás kezelése
+        kovetkezo = response.css('a.page-link[rel=next]::attr(href)').get()
+        if kovetkezo:
+            yield response.follow(kovetkezo, callback=self.parse_category, cb_kwargs={'kategoria': kategoria})
+
+

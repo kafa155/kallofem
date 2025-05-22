@@ -1,13 +1,20 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+import json
+from collections import defaultdict
 
+class GroupedJsonWriterPipeline:
+    def __init__(self):
+        self.data = defaultdict(list)
 
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-
-
-class KallofemScraperPipeline:
     def process_item(self, item, spider):
+        kategoria = item.get("kategoria", "Ismeretlen")
+        cleaned = {
+            "termeknev": item.get("termeknev", ""),
+            "ar": item.get("ar", ""),
+            "kep_url": item.get("kep_url", "")
+        }
+        self.data[kategoria].append(cleaned)
         return item
+
+    def close_spider(self, spider):
+        with open("output.json", "w", encoding="utf-8") as f:
+            json.dump(self.data, f, indent=2, ensure_ascii=False)
