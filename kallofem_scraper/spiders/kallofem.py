@@ -1,35 +1,25 @@
-# A Scrapy könyvtár importálása
 import scrapy
 
-# A spider osztály definiálása
 class KallofemSpider(scrapy.Spider):
-    name = "kallofem"     #A spider egyedi neve
-    allowed_domains = ["kallofem.hu"]     # Az engedélyezett domainek
-    start_urls = ["https://kallofem.hu/shop/group/keriteselemek"]    # A kezdő URL, ahol a scraping elkezdődik
+    name = "kallofem"
+    start_urls = ["https://kallofem.hu/shop"]
 
-    # Ez a metódus felelős a válasz feldolgozásáért
     def parse(self, response):
-        products = response.css("button.product-cart")     # Kiválasztja az összes termékhez tartozó gombot, ahol az adatok rejtve vannak
+        kategoriak = response.css('a.group-box::attr(href)').getall()
+        for url in kategoriak:
+            kategoria_nev = url.split('/')[-1].replace('-', ' ').title()
+            yield response.follow(url, callback=self.parse_category, cb_kwargs={'kategoria': kategoria_nev})
 
-        for product in products:     # Végig megy az összes terméken
-            name = product.attrib.get("data-product_name", "").strip()     # Termék kiolvasása
-            price = product.attrib.get("data-product_price", "").strip()     # Ár kiolvasása
-            image_url = product.attrib.get("data-product_image", "").strip()     # Kép URL kiolvasása
-
-            # Ha a kép relatív kiegészítjűk teljes URL-re
-            if image_url and not image_url.startswith("http"):
-                image_url = response.urljoin(image_url),
-
-            # Visszaadja a feldolgozott terméket, ami bekerül a JSON-ba
+    def parse_category(self, response, kategoria):
+        termekek = response.css('div.product-list-item')
+        for termek in termekek:
             yield {
-                "termeknev": name,
-                "ar": price,
-                "kep_url": image_url,
+                "kategoria": kategoria,
+                "termeknev": termek.css('div.title::text').get(default='').strip(),
+                "ar": termek.css('div.price::text').get(default='').strip().replace(" Ft", "").replace(" ", ""),
+                "kep_url": response.urljoin(termek.css('img::attr(src)').get(default=''))
             }
 
-        # Megkeresi a következő oldal linkjét a lapozóból
-        next_page = response.css("a[rel=next]::attr(href)").get()
+        next_page = response.css('a.page-link[rel=next]::attr(href)').get()
         if next_page:
-            yield response.follow(next_page, callback=self.parse)     # Ha van következő oldal, akkor újabb kérés indul
-
-# Készítette: Jászai Norbert
+            yield response.follow(next_page, callback=self.parse_category, cb_kwargs={'kategoria': kategoria})
