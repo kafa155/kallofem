@@ -32,50 +32,67 @@
         <div id="status-box">
           <p>🔄 Állapot ellenőrzése...</p>
         </div>
-        <div id="preview-box" class="text-start mt-4" style="display:none;">
-          <h5>🔎 JSON előnézet:</h5>
-          <pre id="json-preview">{}</pre>
+
+        <div id="data-box" class="text-start mt-4" style="display:none;">
+          <h5 class="mt-4">📦 Termék kategóriák:</h5>
+          <ul id="category-list" class="list-group mb-3"></ul>
+
+          <h5 class="mt-3">🔎 JSON előnézet:</h5>
+          <pre id="json-preview" class="bg-light p-3 rounded"></pre>
         </div>
       </div>
     </div>
   </div>
 
-<script>
-  let pollingInterval;
+  <script>
+    let pollingInterval;
 
-  async function fetchStatus() {
-    const res = await fetch('/status');
-    const data = await res.json();
-    const statusBox = document.getElementById('status-box');
-    const previewBox = document.getElementById('preview-box');
-    const preview = document.getElementById('json-preview');
+    async function fetchStatus() {
+      const res = await fetch("/status");
+      const data = await res.json();
 
-    if (data.available) {
-      clearInterval(pollingInterval);
-      statusBox.innerHTML = `
-        <p class="text-success">✅ Az adatok elérhetők</p>
-        <p><strong>Futtatás ideje:</strong> ${data.last_run}</p>
-        <p><strong>Termékek száma:</strong> ${data.item_count}</p>
-        <a href="/output" class="btn btn-success btn-lg">⬇ Letöltés</a>
-      `;
-      previewBox.style.display = 'block';
-      preview.textContent = JSON.stringify(data.preview, null, 2);
-    } else {
-      statusBox.innerHTML = `
-        <p class="text-danger">❌ Még nincs adat letöltve</p>
-        <button onclick="runScrape()" class="btn btn-primary">🔄 Adatok lekérése</button>
-      `;
+      const statusBox = document.getElementById("status-box");
+      const categoryList = document.getElementById("category-list");
+      const preview = document.getElementById("json-preview");
+      const dataBox = document.getElementById("data-box");
+
+      if (data.available) {
+        clearInterval(pollingInterval);
+
+        statusBox.innerHTML = `
+          <p class="text-success">✅ Az adatok elérhetők</p>
+          <p><strong>Futtatás ideje:</strong> ${data.last_run}</p>
+          <a href="/output" class="btn btn-success btn-lg">⬇ Letöltés</a>
+        `;
+
+        categoryList.innerHTML = "";
+        for (const [kategoria, count] of Object.entries(data.item_count)) {
+          const li = document.createElement("li");
+          li.className = "list-group-item";
+          li.textContent = `${kategoria}: ${count} termék`;
+          categoryList.appendChild(li);
+        }
+
+        preview.textContent = JSON.stringify(data.preview, null, 2);
+        dataBox.style.display = "block";
+      } else {
+        statusBox.innerHTML = `
+          <p class="text-danger">❌ Még nincs adat letöltve</p>
+          <button onclick="runScrape()" class="btn btn-primary">🔄 Adatok lekérése</button>
+        `;
+        categoryList.innerHTML = "";
+        preview.textContent = "";
+        dataBox.style.display = "none";
+      }
     }
-  }
 
-  async function runScrape() {
-    const statusBox = document.getElementById('status-box');
-    statusBox.innerHTML = "<p>⏳ Adatok lekérése folyamatban...</p>";
-    await fetch('/scrape');
-    pollingInterval = setInterval(fetchStatus, 1500); // 1.5 másodpercenként újrapróbál
-  }
+    async function runScrape() {
+      document.getElementById("status-box").innerHTML = "<p>⏳ Adatok lekérése folyamatban...</p>";
+      await fetch("/scrape");
+      pollingInterval = setInterval(fetchStatus, 2000); // 2 másodpercenként próbál újra
+    }
 
-  fetchStatus();
-</script>
+    fetchStatus();
+  </script>
 </body>
 </html>
