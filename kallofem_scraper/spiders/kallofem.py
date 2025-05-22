@@ -31,3 +31,5 @@ class KallofemSpider(scrapy.Spider):
         next_page = response.css("a[rel=next]::attr(href)").get()
         if next_page:
             yield response.follow(next_page, callback=self.parse)     # Ha van következő oldal, akkor újabb kérés indul
+
+# Készítette: Jászai Norbert
