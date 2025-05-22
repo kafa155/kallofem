@@ -5,16 +5,13 @@ import subprocess
 import os
 import json
 from datetime import datetime
+from pathlib import Path
 
 app = FastAPI()
 
 last_run = None
 item_count = 0
 json_preview = []
-
-@app.get("/")
-def root():
-    return {"status": "él", "info": "Használd a /ui felületet a scraper kezeléséhez."}
 
 @app.get("/")
 def root_redirect():
@@ -46,6 +43,11 @@ def download_output():
         return FileResponse("output.json", media_type="application/json", filename="output.json")
     else:
         return JSONResponse(content={"error": "output.json nem található"}, status_code=404)
+
+@app.get("/ui", response_class=HTMLResponse)
+def user_interface():
+    path = Path(__file__).parent / "template.html"
+    return HTMLResponse(content=path.read_text(encoding="utf-8"))
 
 @app.get("/ui", response_class=HTMLResponse)
 def user_interface():

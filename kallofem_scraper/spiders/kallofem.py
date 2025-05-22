@@ -18,7 +18,7 @@ class KallofemSpider(scrapy.Spider):
 
             # Ha a kép relatív kiegészítjűk teljes URL-re
             if image_url and not image_url.startswith("http"):
-                image_url = response.urljoin(image_url)
+                image_url = response.urljoin(image_url),
 
             # Visszaadja a feldolgozott terméket, ami bekerül a JSON-ba
             yield {
