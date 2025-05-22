@@ -16,9 +16,13 @@ ADDONS = {}
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
+
+# Azonosítsuk magunkat úgy, mintha egy valódi böngésző lennénk (pl. Google Chrome)
+# Ez segít elkerülni a 403-as tiltásokat, mert a weboldal nem ismeri fel a botot
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 
 # Obey robots.txt rules
+# Ez lehetővé teszi, hogy a Scrapy akkor is letöltsön oldalakat, ha a robots.txt tiltja őket
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
