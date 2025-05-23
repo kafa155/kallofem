@@ -14,13 +14,11 @@ A projekt célja egy **önállóan futtatható adatszerző alkalmazás** létreh
 - Egyszerű API-n keresztül elérhetővé teszi az adatokat
 - Webes felületen keresztül is lekérdezhető, megtekinthető és letölthető
 
-A projekt kiváló alap lehet webadatbányászati, üzleti elemzési vagy e-kereskedelmi integrációs célokra.
-
 ---
 
 ## 🧠 Rendszerfelépítés
 
-### 1. **Scrapy Spider** (`kallofem_spider.py`)
+### 1. **Scrapy Spider** (`kallofem.py`)
 
 - Elindul az összes terméket tartalmazó oldalról
 - Kinyeri az összes termékkategória linkjét
