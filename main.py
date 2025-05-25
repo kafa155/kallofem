@@ -61,3 +61,7 @@ def get_ui():
     # A template.html fájl beolvasása a fájlrendszerből
     path = Path(__file__).parent / "template.html"
     return HTMLResponse(path.read_text(encoding="utf-8"))
+
+@app.get("/ping")
+def ping():
+    return {"status": "ok"}
