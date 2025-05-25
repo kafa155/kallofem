@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 import subprocess
+from pytz import timezone
 
 # FastAPI alkalmazás példány létrehozása
 app = FastAPI()
@@ -45,7 +46,8 @@ def get_status():
     # Előnézet: maximum 3 termék kategóriánként
     preview = [{k: v[:3]} for k, v in data.items()]
     # Aktuális idő a lekérés időpontjához
-    last_run = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
+    budapest = timezone("Europe/Budapest")
+    last_run = datetime.now(budapest).strftime("%Y.%m.%d %H:%M:%S")
 
     # JSON válasz részletes adatokkal
     return {
